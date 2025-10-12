@@ -1,5 +1,8 @@
 # Homepanel custom components for Home Assistant
 
+## Work in progress
+This library is a work in progress. Although some components already function, they are not ready for production use yet.  
+
 ## Building
 
 ```
