@@ -10,6 +10,7 @@ interface IndicatorWidgetCardConfig extends LovelaceCardConfig {
   entitySW?: string
   bgColor?: string
   bgColorClassifyRanges?: string
+  valueFormat?: string
 }
 
 function lookupEntityInState(
@@ -44,13 +45,18 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
     bgColor = configTyped.bgColor
   }
 
+  let value = entityMain?.state
+  if (configTyped?.valueFormat && value) {
+    value = configTyped?.valueFormat.replaceAll("{value}", value)
+  }
+
   return (
     <div
       className="w-24 h-24 p-2 relative"
       style={{ backgroundColor: bgColor }}
     >
       <div className="w-full h-full text-center">
-        <div className="text-lg">{entityMain?.state}</div>
+        <div className="text-lg">{value ?? "N/A"}</div>
         <div className="text-sm whitespace-normal font-bold">{mainTitle}</div>
       </div>
       <div className="absolute bottom-0 right-0 p-1 text-xss text-white">
