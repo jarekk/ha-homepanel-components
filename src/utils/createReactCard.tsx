@@ -9,6 +9,7 @@ const createReactCard = (
   ReactComponent: CustomCardReactComponent
 ) => {
   return class Card extends HTMLElement {
+    private container: HTMLDivElement
     private root: ReactDOM.Root
     private config: LovelaceCardConfig | undefined
     private state: HomeAssistant | undefined
@@ -16,7 +17,14 @@ const createReactCard = (
     constructor() {
       super()
       this.attachShadow({ mode: "open" })
-      this.root = ReactDOM.createRoot(this.shadowRoot!)
+      this.container = document.createElement("div")
+      this.shadowRoot!.appendChild(this.container)
+      const style = document.createElement("style")
+      style.textContent = styles
+      this.shadowRoot!.appendChild(style)
+
+      this.root = ReactDOM.createRoot(this.container)
+
       this.render()
     }
 
@@ -26,9 +34,9 @@ const createReactCard = (
     }
 
     render() {
-      const style = document.createElement("style")
-      style.textContent = styles
-      this.shadowRoot!.appendChild(style)
+      // const style = document.createElement("style")
+      // style.textContent = styles
+      // this.shadowRoot!.appendChild(style)
 
       this.root.render(
         <React.StrictMode>
