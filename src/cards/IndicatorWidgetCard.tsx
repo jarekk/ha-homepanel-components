@@ -1,26 +1,56 @@
 import { useRef } from "react"
 import type { HomeAssistant, LovelaceCardConfig } from "custom-card-helpers"
+import { NumberRangeValueClassifier } from "../registry/numberRangeValueClassifier"
+import type { CardProps } from "../utils/registerCard"
+import { theme } from "../config"
 
-export type IndicatorWidgetCardProps = {
-  config: LovelaceCardConfig | undefined
-  hass: HomeAssistant | undefined
+interface IndicatorWidgetCardConfig extends LovelaceCardConfig {
+  title?: string
+  entity: string
+  entitySW?: string
+  bgColor?: string
+  bgColorClassifyRanges?: string
 }
-export function IndicatorWidgetCard({
-  config,
-  hass,
-}: IndicatorWidgetCardProps) {
+
+function lookupEntityInState(
+  hass: HomeAssistant | undefined,
+  entityId: string | undefined
+) {
+  if (!hass || !entityId) return undefined
+  return hass.states?.[entityId]
+}
+
+export function IndicatorWidgetCard({ config, hass }: CardProps) {
+  const configTyped = config as IndicatorWidgetCardConfig | undefined
   const renderRef = useRef(0)
   renderRef.current++
 
-  const mainState = hass?.states?.[config?.entity]?.state ?? "N/A"
+  const entityMain = lookupEntityInState(hass, configTyped?.entity)
+  const entitySW = lookupEntityInState(hass, configTyped?.entitySW)
+
   const mainTitle =
-    hass?.states?.[config?.entity]?.attributes.friendly_name ?? "N/A"
-  const stateSW = hass?.states?.[config?.entitySW]?.state ?? "N/A"
+    config?.title ?? entityMain?.attributes.friendly_name ?? "N/A"
+  const stateSW = entitySW?.state ?? "N/A"
+
+  let bgColor = theme.namedColors.Undefined
+
+  if (configTyped?.bgColorClassifyRanges && entityMain) {
+    const classifier = new NumberRangeValueClassifier(
+      configTyped.bgColorClassifyRanges
+    )
+    bgColor = classifier.classify(entityMain.state)
+  }
+  if (configTyped?.bgColor) {
+    bgColor = configTyped.bgColor
+  }
 
   return (
-    <div className="w-24 h-24 p-2 bg-orange-400 relative">
+    <div
+      className="w-24 h-24 p-2 relative"
+      style={{ backgroundColor: bgColor }}
+    >
       <div className="w-full h-full text-center">
-        <div className="text-lg">{mainState}</div>
+        <div className="text-lg">{entityMain?.state}</div>
         <div className="text-sm whitespace-normal font-bold">{mainTitle}</div>
       </div>
       <div className="absolute bottom-0 right-0 p-1 text-xss text-white">
