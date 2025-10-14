@@ -3,7 +3,7 @@ import type { LovelaceCardConfig } from "custom-card-helpers"
 import { NumberRangeValueClassifier } from "../registry/numberRangeValueClassifier"
 import type { CardProps } from "../utils/registerCard"
 import { theme } from "../config"
-import { lookupEntityInState } from "../utils/widgetUtils"
+import { evaluateTemplate, lookupEntityInState } from "../utils/widgetUtils"
 
 interface IndicatorWidgetCardConfig extends LovelaceCardConfig {
   title?: string
@@ -40,7 +40,10 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
 
   let value = entityMain?.state
   if (configTyped?.valueFormat && value) {
-    value = configTyped?.valueFormat.replaceAll("{value}", value)
+    // value = configTyped?.valueFormat.replaceAll("{value}", value)
+    value = evaluateTemplate(configTyped?.valueFormat, {
+      value: value,
+    })
   }
 
   return (
