@@ -13,6 +13,7 @@
     "@preact/signals-react": "^3.3.1",
     "@tailwindcss/vite": "^4.1.14",
     "custom-card-helpers": "^1.9.0",
+    "nunjucks": "^3.2.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.14"
