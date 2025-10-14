@@ -33,4 +33,4 @@ export const standardTheme = {
   }
 }
 
-
+export type NamedColorKeys = keyof typeof standardTheme.namedColors

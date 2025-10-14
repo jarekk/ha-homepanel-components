@@ -1,17 +1,24 @@
-import { memo, useRef } from "react"
+import { memo } from "react"
 import type { LovelaceCardConfig } from "custom-card-helpers"
-import { NumberRangeValueClassifier } from "../registry/numberRangeValueClassifier"
 import type { CardProps } from "../utils/registerCard"
-import { theme } from "../config"
-import { evaluateTemplate, lookupEntityInState } from "../utils/widgetUtils"
+import {
+  evaluateExpression,
+  resolveColor,
+  lookupEntityInState,
+} from "../utils/widgetUtils"
+import type { NamedColorKeys } from "../theme/standardTheme"
 
 interface IndicatorWidgetCardConfig extends LovelaceCardConfig {
   title?: string
+  titleExpr?: string
   entity: string
+  valueExpr?: string
+  entityNW?: string
+  entityNE?: string
   entitySW?: string
+  entitySE?: string
   bgColor?: string
-  bgColorClassifyRanges?: string
-  valueFormat?: string
+  bgColorExpr?: string
 }
 
 const IndicatorWidgetMemo = memo(IndicatorWidgetView)
@@ -20,52 +27,71 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
   const configTyped = config as IndicatorWidgetCardConfig | undefined
 
   const entityMain = lookupEntityInState(hass, configTyped?.entity)
-  const entitySW = lookupEntityInState(hass, configTyped?.entitySW)
+  const rawValue = entityMain?.state
 
-  const mainTitle =
-    config?.title ?? entityMain?.attributes.friendly_name ?? "N/A"
-  const stateSW = entitySW?.state ?? "N/A"
+  const rawValueNW = lookupEntityInState(hass, configTyped?.entityNW)?.state
+  const rawValueNE = lookupEntityInState(hass, configTyped?.entityNE)?.state
+  const rawValueSW = lookupEntityInState(hass, configTyped?.entitySW)?.state
+  const rawValueSE = lookupEntityInState(hass, configTyped?.entitySE)?.state
 
-  let bgColor = theme.namedColors.Undefined
+  let title: string =
+    config?.title ?? entityMain?.attributes.friendly_name ?? ""
 
-  if (configTyped?.bgColorClassifyRanges && entityMain) {
-    const classifier = new NumberRangeValueClassifier(
-      configTyped.bgColorClassifyRanges
-    )
-    bgColor = classifier.classify(entityMain.state)
+  if (configTyped?.titleExpr) {
+    title =
+      evaluateExpression(
+        configTyped?.titleExpr,
+        rawValue ?? "",
+        { fn: entityMain?.attributes.friendly_name },
+        hass
+      ) ?? ""
   }
+
+  let bgColorName: string = "Undefined" as const satisfies NamedColorKeys
+
   if (configTyped?.bgColor) {
-    bgColor = configTyped.bgColor
+    bgColorName = configTyped.bgColor
+  }
+  if (configTyped?.bgColorExpr) {
+    bgColorName =
+      evaluateExpression(configTyped.bgColorExpr, rawValue ?? "", {}, hass) ??
+      ""
   }
 
-  let value = entityMain?.state
-  if (configTyped?.valueFormat && value) {
-    // value = configTyped?.valueFormat.replaceAll("{value}", value)
-    value = evaluateTemplate(configTyped?.valueFormat, {
-      value: value,
-    })
+  let value: string = rawValue ?? ""
+  if (configTyped?.valueExpr) {
+    value =
+      evaluateExpression(configTyped?.valueExpr, rawValue ?? "", {}, hass) ?? ""
   }
+  const valueNW = rawValueNW
+  const valueNE = rawValueNE
+  const valueSW = rawValueSW
+  const valueSE = rawValueSE
 
   return (
     <IndicatorWidgetMemo
-      mainTitle={mainTitle}
-      bgColor={bgColor}
+      title={title}
+      bgColor={resolveColor(bgColorName)}
       value={value}
-      stateSW={stateSW}
+      valueSW={valueSW}
+      valueSE={valueSE}
+      valueNW={valueNW}
+      valueNE={valueNE}
     />
   )
 }
 
 type IndicatorWidgetViewProps = {
-  mainTitle: string
+  title: string
   bgColor: string
   value: string | undefined
-  stateSW: string
+  valueNW: string | undefined
+  valueNE: string | undefined
+  valueSW: string | undefined
+  valueSE: string | undefined
 }
 
 function IndicatorWidgetView(props: IndicatorWidgetViewProps) {
-  const renderRef = useRef(0)
-  renderRef.current++
   return (
     <div
       className="w-24 h-24 p-2 relative"
@@ -73,16 +99,28 @@ function IndicatorWidgetView(props: IndicatorWidgetViewProps) {
     >
       <div className="w-full h-full text-center">
         <div className="text-lg">{props.value ?? "N/A"}</div>
-        <div className="text-sm whitespace-normal font-bold">
-          {props.mainTitle}
+        <div className="text-sm whitespace-normal font-bold">{props.title}</div>
+      </div>
+      {props.valueNW && (
+        <div className="absolute top-0 left-0 p-1 text-xss text-white">
+          {props.valueNW}
         </div>
-      </div>
-      <div className="absolute bottom-0 right-0 p-1 text-xss text-white">
-        {renderRef.current}
-      </div>
-      <div className="absolute bottom-0 left-0 p-1 text-xss text-white">
-        {props.stateSW}
-      </div>
+      )}
+      {props.valueNE && (
+        <div className="absolute top-0 right-0 p-1 text-xss text-white">
+          {props.valueNE}
+        </div>
+      )}
+      {props.valueSW && (
+        <div className="absolute bottom-0 left-0 p-1 text-xss text-white">
+          {props.valueSW}
+        </div>
+      )}
+      {props.valueSE && (
+        <div className="absolute bottom-0 right-0 p-1 text-xss text-white">
+          {props.valueSE}
+        </div>
+      )}
     </div>
   )
 }
