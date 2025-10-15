@@ -11,6 +11,8 @@ import type { NamedColorKeys } from "../theme/standardTheme"
 interface IndicatorWidgetCardConfig extends LovelaceCardConfig {
   title?: string
   titleExpr?: string
+  icon?: string
+  iconExpr?: string
   entity: string
   valueExpr?: string
   entityNW?: string
@@ -68,6 +70,11 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
   const valueSW = rawValueSW
   const valueSE = rawValueSE
 
+  let icon = configTyped?.icon
+  if (configTyped?.iconExpr) {
+    icon =
+      evaluateExpression(configTyped?.iconExpr, rawValue ?? "", {}, hass) ?? ""
+  }
   return (
     <IndicatorWidgetMemo
       title={title}
@@ -77,6 +84,7 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
       valueSE={valueSE}
       valueNW={valueNW}
       valueNE={valueNE}
+      icon={icon}
     />
   )
 }
@@ -84,6 +92,7 @@ export function IndicatorWidgetCard({ config, hass }: CardProps) {
 type IndicatorWidgetViewProps = {
   title: string
   bgColor: string
+  icon?: string
   value: string | undefined
   valueNW: string | undefined
   valueNE: string | undefined
@@ -98,26 +107,34 @@ function IndicatorWidgetView(props: IndicatorWidgetViewProps) {
       style={{ backgroundColor: props.bgColor }}
     >
       <div className="w-full h-full text-center">
-        <div className="text-lg">{props.value ?? "N/A"}</div>
-        <div className="text-sm whitespace-normal font-bold">{props.title}</div>
+        {props.icon && (
+          <div className="w-14 h-14">
+            {/* @ts-expect-error: Allow custom web component */}
+            <ha-icon className="w-14 h-14" icon={props.icon} />
+          </div>
+        )}
+        <div className="text-lg whitespace-nowrap">{props.value ?? "N/A"}</div>
+        {props.title && (
+          <div className="text-sm whitespace-nowrap ">{props.title}</div>
+        )}
       </div>
       {props.valueNW && (
-        <div className="absolute top-0 left-0 p-1 text-xss text-white">
+        <div className="absolute top-0 left-0 p-1 text-tiny text-white">
           {props.valueNW}
         </div>
       )}
       {props.valueNE && (
-        <div className="absolute top-0 right-0 p-1 text-xss text-white">
+        <div className="absolute top-0 right-0 p-1 text-tiny text-white">
           {props.valueNE}
         </div>
       )}
       {props.valueSW && (
-        <div className="absolute bottom-0 left-0 p-1 text-xss text-white">
+        <div className="absolute bottom-0 left-0 p-1 text-tiny text-white">
           {props.valueSW}
         </div>
       )}
       {props.valueSE && (
-        <div className="absolute bottom-0 right-0 p-1 text-xss text-white">
+        <div className="absolute bottom-0 right-0 p-1 text-tiny text-white">
           {props.valueSE}
         </div>
       )}
