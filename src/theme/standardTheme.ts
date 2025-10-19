@@ -30,6 +30,10 @@ export const standardTheme = {
     LevelHigh: "#27ae60",
     LevelVeryHigh: "#28b463",
     LevelHighest: "#3bcb27",
+
+    ActiveIconGreen: "#28b463",
+    ActiveIconOrange: "#d68910",
+    ActiveIconBlue: "#3498db",
   }
 }
 
