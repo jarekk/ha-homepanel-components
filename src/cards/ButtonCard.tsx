@@ -91,7 +91,7 @@ export function ButtonCard({
           } as any}
         />
       )}
-      <span className="text-foreground text-xs">{configTyped?.title || "--"}</span>
+      <span className="text-foreground text-sm">{configTyped?.title || "--"}</span>
     </button>
   )
 }

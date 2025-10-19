@@ -92,19 +92,21 @@ export function ContainerCard({
   }, [])
 
   return (
-    <div className="w-full flex gap-2" style={{ marginTop: '8px', marginLeft: '8px' }}>
-      {columns.map((columnCards, colIdx) => (
-        <div key={`col-${colIdx}`} className="flex-1 flex flex-col gap-2">
-          {columnCards?.map((cardConfig, cardIdx) => (
-            <CardContainer
-              key={`col${colIdx}-${cardIdx}`}
-              cardConfig={cardConfig}
-              hass={hass}
-              createCardElement={createCardElement}
-            />
-          ))}
-        </div>
-      ))}
+    <div className="w-full flex justify-center" style={{ marginTop: '8px' }}>
+      <div className="flex gap-2" style={{ }}>
+        {columns.map((columnCards, colIdx) => (
+          <div key={`col-${colIdx}`} className="flex flex-col gap-2">
+            {columnCards?.map((cardConfig, cardIdx) => (
+              <CardContainer
+                key={`col${colIdx}-${cardIdx}`}
+                cardConfig={cardConfig}
+                hass={hass}
+                createCardElement={createCardElement}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
