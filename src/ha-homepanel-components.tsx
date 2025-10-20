@@ -6,6 +6,9 @@ import { RainWateringCard } from "./cards/RainWateringCard"
 import { ButtonCard } from "./cards/ButtonCard"
 import { ContainerCard } from "./cards/ContainerCard"
 import { CoverControlButtonCard } from "./cards/CoverControlButtonCard"
+import { EnergyUsageInfoCard } from "./cards/EnergyUsageInfoCard"
+import { ScrollableTextCard } from "./cards/ScrollableTextCard"
+import { NotificationsCard } from "./cards/NotificationsCard"
 
 // function loadCSS(url: string) {
 //   const link = document.createElement("link")
@@ -40,3 +43,6 @@ registerCard("ha-homepanel-rain-watering", RainWateringCard)
 registerCard("ha-homepanel-button", ButtonCard)
 registerCard("ha-homepanel-container", ContainerCard)
 registerCard("ha-homepanel-cover-control", CoverControlButtonCard)
+registerCard("ha-homepanel-energy-usage", EnergyUsageInfoCard)
+registerCard("ha-homepanel-scrollable-text", ScrollableTextCard)
+registerCard("ha-homepanel-notifications", NotificationsCard)

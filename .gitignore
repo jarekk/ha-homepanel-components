@@ -26,3 +26,12 @@ dist-ssr
 bin
 lib
 overrides
+
+# Python virtual environment
+pyvenv.cfg
+
+# Local config files
+config.yml
+
+# Backup files
+*.bak
