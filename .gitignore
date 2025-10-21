@@ -35,3 +35,5 @@ config.yml
 
 # Backup files
 *.bak
+deploy-watch.sh
+deploy-websocket.py
