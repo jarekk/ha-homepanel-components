@@ -6,6 +6,8 @@ export interface TapAction {
   url_path?: string
   service?: string
   service_data?: any
+  perform_action?: string
+  data?: any
   target?: {
     entity_id?: string | string[]
     device_id?: string | string[]
@@ -22,6 +24,7 @@ export function handleTapAction(
   if (!tapAction || !hass) return
 
   const action = tapAction.action
+  console.log("Handling tap action:", action, tapAction)
 
   switch (action) {
     case "navigate":
@@ -39,6 +42,19 @@ export function handleTapAction(
       if (tapAction.service) {
         const [domain, service] = tapAction.service.split(".")
         const serviceData = { ...tapAction.service_data }
+
+        // Merge target into service_data if provided
+        if (tapAction.target) {
+          Object.assign(serviceData, tapAction.target)
+        }
+
+        hass.callService(domain, service, serviceData)
+      }
+      break
+    case "perform-action":
+      if (tapAction.perform_action) {
+        const [domain, service] = tapAction.perform_action.split(".")
+        const serviceData = { ...(tapAction.data || tapAction.service_data) }
 
         // Merge target into service_data if provided
         if (tapAction.target) {

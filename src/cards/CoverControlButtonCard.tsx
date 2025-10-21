@@ -14,6 +14,7 @@ interface CoverControlButtonConfig extends LovelaceCardConfig {
   hold_action_down?: TapAction
   hold_action_stop?: TapAction
   hold_action_up?: TapAction
+  supports_position?: boolean // Set to false if entity doesn't provide position
 }
 
 export function CoverControlButtonCard({
@@ -26,6 +27,9 @@ export function CoverControlButtonCard({
   renderRef.current++
 
   const theme = getTheme()
+
+  // Check if entity supports position (default: true for backward compatibility)
+  const supportsPosition = configTyped?.supports_position !== false
 
   // Get cover position
   const entityState = lookupEntityInState(hass, configTyped?.entity ?? "")
@@ -54,8 +58,8 @@ export function CoverControlButtonCard({
       // Execute hold action once
       let action = holdAction
 
-      if (!action && configTyped?.entity && positionAdjustment !== undefined) {
-        // For up/down buttons, adjust position by 1% on hold
+      if (!action && configTyped?.entity && positionAdjustment !== undefined && supportsPosition) {
+        // For up/down buttons, adjust position by 1% on hold (only if position is supported)
         const currentPos = lookupEntityInState(hass, configTyped.entity)?.attributes?.current_position ?? 50
         const newPosition = Math.max(0, Math.min(100, currentPos + positionAdjustment))
         console.log(`🔧 Adjusting position from ${currentPos} to ${newPosition}`)
@@ -177,27 +181,31 @@ export function CoverControlButtonCard({
         backgroundColor: theme.card.inactiveButtonBackgroundColor
       }}
     >
-      {/* Left indicator bar - in background */}
-      <div className="absolute left-0 top-0 bottom-0 w-[15px] z-0">
-        <div
-          className="absolute top-0 left-0 right-0 transition-all duration-300"
-          style={{
-            height: `${indicatorHeight}%`,
-            backgroundColor: theme.card.activeButtonBackgroundColor
-          }}
-        />
-      </div>
+      {/* Left indicator bar - in background (only if position is supported) */}
+      {supportsPosition && (
+        <div className="absolute left-0 top-0 bottom-0 w-[15px] z-0">
+          <div
+            className="absolute top-0 left-0 right-0 transition-all duration-300"
+            style={{
+              height: `${indicatorHeight}%`,
+              backgroundColor: theme.card.activeButtonBackgroundColor
+            }}
+          />
+        </div>
+      )}
 
-      {/* Right indicator bar - in background */}
-      <div className="absolute right-0 top-0 bottom-0 w-[15px] z-0">
-        <div
-          className="absolute top-0 left-0 right-0 transition-all duration-300"
-          style={{
-            height: `${indicatorHeight}%`,
-            backgroundColor: theme.card.activeButtonBackgroundColor
-          }}
-        />
-      </div>
+      {/* Right indicator bar - in background (only if position is supported) */}
+      {supportsPosition && (
+        <div className="absolute right-0 top-0 bottom-0 w-[15px] z-0">
+          <div
+            className="absolute top-0 left-0 right-0 transition-all duration-300"
+            style={{
+              height: `${indicatorHeight}%`,
+              backgroundColor: theme.card.activeButtonBackgroundColor
+            }}
+          />
+        </div>
+      )}
 
       {/* Main content area */}
       <div className="flex-1 px-2 py-1 relative z-10">
