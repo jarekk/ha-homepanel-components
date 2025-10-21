@@ -109,9 +109,8 @@ function IndicatorWidgetView(props: IndicatorWidgetViewProps) {
       <div className="w-full h-full text-center">
         {props.icon && (
           <div className="w-full text-center">
-            {/* @ts-expect-error: Allow custom web component */}
             <ha-icon
-              style={{ "--mdc-icon-size": "3.5rem" }}
+              style={{ "--mdc-icon-size": "3.5rem" } as any}
               icon={props.icon}
             />
           </div>

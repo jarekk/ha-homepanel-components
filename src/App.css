@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-@theme {  
-  --text-tiny: 0.625rem; 
-  --spacing: 5px;
+/*
+ * CSS variables are now set dynamically via themeContext
+ * Default values are provided as fallbacks
+ */
+@theme {
+
 }
 

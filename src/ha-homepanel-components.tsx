@@ -9,6 +9,7 @@ import { CoverControlButtonCard } from "./cards/CoverControlButtonCard"
 import { EnergyUsageInfoCard } from "./cards/EnergyUsageInfoCard"
 import { ScrollableTextCard } from "./cards/ScrollableTextCard"
 import { NotificationsCard } from "./cards/NotificationsCard"
+import { initializeTheme } from "./theme/themeContext"
 
 // function loadCSS(url: string) {
 //   const link = document.createElement("link")
@@ -25,6 +26,9 @@ function loadDirectCSS(styles: string) {
 }
 
 loadDirectCSS(styles)
+
+// Initialize theme with CSS variables
+initializeTheme('rounded-beauty')
 
 // Display startup logo
 console.log(`
