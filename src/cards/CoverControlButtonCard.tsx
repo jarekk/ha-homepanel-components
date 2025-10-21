@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import type { LovelaceCardConfig } from "custom-card-helpers"
 import type { CardProps } from "../utils/registerCard"
 import { handleTapAction, type TapAction } from "../utils/actionHandler"
@@ -28,6 +28,9 @@ export function CoverControlButtonCard({
 
   const theme = getTheme()
 
+  // State for button press feedback
+  const [pressedButton, setPressedButton] = useState<'up' | 'stop' | 'down' | null>(null)
+
   // Check if entity supports position (default: true for backward compatibility)
   const supportsPosition = configTyped?.supports_position !== false
 
@@ -45,6 +48,7 @@ export function CoverControlButtonCard({
     tapAction: TapAction | undefined,
     holdAction: TapAction | undefined,
     defaultService: string,
+    buttonId: 'up' | 'stop' | 'down',
     positionAdjustment?: number // +1 or -1 for position adjustment
   ) => {
     // Use refs to persist state across re-renders
@@ -94,6 +98,9 @@ export function CoverControlButtonCard({
       stateRef.current.isHolding = false
       stateRef.current.actionExecuted = false
 
+      // Visual feedback
+      setPressedButton(buttonId)
+
       stateRef.current.holdTimer = setTimeout(() => {
         stateRef.current.isHolding = true
         executeHoldAction()
@@ -104,6 +111,9 @@ export function CoverControlButtonCard({
       e.preventDefault()
       e.stopPropagation()
       console.log("🖱️ Pointer up", defaultService, "isHolding:", stateRef.current.isHolding, "actionExecuted:", stateRef.current.actionExecuted)
+
+      // Clear visual feedback
+      setTimeout(() => setPressedButton(null), 150)
 
       if (stateRef.current.holdTimer) {
         clearTimeout(stateRef.current.holdTimer)
@@ -156,13 +166,15 @@ export function CoverControlButtonCard({
     configTyped?.tap_action_down,
     configTyped?.hold_action_down,
     "cover.close_cover",
+    'down',
     -1 // Decrease position by 1% on hold
   )
 
   const stopHandlers = createButtonHandler(
     configTyped?.tap_action_stop,
     configTyped?.hold_action_stop,
-    "cover.stop_cover"
+    "cover.stop_cover",
+    'stop'
     // No position adjustment for stop button
   )
 
@@ -170,6 +182,7 @@ export function CoverControlButtonCard({
     configTyped?.tap_action_up,
     configTyped?.hold_action_up,
     "cover.open_cover",
+    'up',
     +1 // Increase position by 1% on hold
   )
 
@@ -219,6 +232,9 @@ export function CoverControlButtonCard({
         <button
           {...downHandlers}
           className="flex-1 h-full flex items-center justify-center hover:bg-accent/50 transition-colors rounded-sm"
+          style={{
+            backgroundColor: pressedButton === 'down' ? 'rgba(255, 255, 255, 0.3)' : undefined
+          }}
         >
           <ha-icon
             icon="mdi:arrow-down"
@@ -244,6 +260,9 @@ export function CoverControlButtonCard({
         <button
           {...stopHandlers}
           className="flex items-center justify-center h-full px-3 bg-accent/30 hover:bg-accent/50 transition-colors rounded-sm"
+          style={{
+            backgroundColor: pressedButton === 'stop' ? 'rgba(255, 255, 255, 0.3)' : undefined
+          }}
         >
           <ha-icon
             icon="mdi:stop"
@@ -269,6 +288,9 @@ export function CoverControlButtonCard({
         <button
           {...upHandlers}
           className="flex-1 h-full flex items-center justify-center hover:bg-accent/50 transition-colors rounded-sm"
+          style={{
+            backgroundColor: pressedButton === 'up' ? 'rgba(255, 255, 255, 0.3)' : undefined
+          }}
         >
           <ha-icon
             icon="mdi:arrow-up"

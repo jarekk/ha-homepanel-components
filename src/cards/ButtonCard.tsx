@@ -16,6 +16,7 @@ interface ButtonCardConfig extends LovelaceCardConfig {
   icon?: string
   entity?: string
   isLight?: boolean
+  brightness?: number // 0-100, if provided will turn on light to this brightness percentage
   tap_action?: TapAction
   tap_action_active?: TapAction
   tap_action_inactive?: TapAction
@@ -38,6 +39,8 @@ export function ButtonCard({
   // Hold action state
   const [showMenu, setShowMenu] = useState(false)
   const [menuPosition, setMenuPosition] = useState<'above' | 'below'>('below')
+  const [isPressed, setIsPressed] = useState(false)
+  const [pressedChoiceIndex, setPressedChoiceIndex] = useState<number | null>(null)
   const holdTimerRef = useRef<number | null>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -45,7 +48,18 @@ export function ButtonCard({
   // Get entity state first (needed to determine which action to use)
   const entityState = lookupEntityInState(hass, configTyped?.entity ?? "")
   const state = entityState?.state
-  const isOn = state === "on" || state === "open" || state === "active" || state === "unlocked"
+
+  // Check if entity is active
+  // If brightness is specified, only consider it "on" if the light is on AND has that brightness
+  let isOn = state === "on" || state === "open" || state === "active" || state === "unlocked"
+
+  if (configTyped?.brightness !== undefined && state === "on") {
+    const currentBrightness = entityState?.attributes?.brightness // 0-255 in HA
+    const targetBrightness = Math.round((configTyped.brightness / 100) * 255) // Convert 0-100 to 0-255
+    // Allow ±2 tolerance for rounding errors
+    const tolerance = 2
+    isOn = Math.abs(currentBrightness - targetBrightness) <= tolerance
+  }
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -67,6 +81,10 @@ export function ButtonCard({
   }, [showMenu])
 
   const handleClick = () => {
+    // Visual feedback
+    setIsPressed(true)
+    setTimeout(() => setIsPressed(false), 150)
+
     // Don't trigger tap action if menu is showing
     if (showMenu) {
       setShowMenu(false)
@@ -91,10 +109,42 @@ export function ButtonCard({
       const entityId = configTyped.entity
       const domain = entityId.split(".")[0]
 
-      if (domain === "light" || domain === "switch") {
+      if (domain === "light") {
+        // For lights with brightness specified, turn on/off based on current state
+        if (configTyped.brightness !== undefined) {
+          if (isOn) {
+            // If button is active (light at target brightness), turn off
+            action = {
+              action: "call-service",
+              service: "light.turn_off",
+              service_data: {
+                entity_id: entityId
+              }
+            }
+          } else {
+            // If button is inactive, turn on to target brightness
+            action = {
+              action: "call-service",
+              service: "light.turn_on",
+              service_data: {
+                entity_id: entityId,
+                brightness_pct: configTyped.brightness
+              }
+            }
+          }
+        } else {
+          action = {
+            action: "call-service",
+            service: "light.toggle",
+            service_data: {
+              entity_id: entityId
+            }
+          }
+        }
+      } else if (domain === "switch") {
         action = {
           action: "call-service",
-          service: `${domain}.toggle`,
+          service: "switch.toggle",
           service_data: {
             entity_id: entityId
           }
@@ -138,20 +188,32 @@ export function ButtonCard({
     }
   }
 
-  const handleChoiceClick = (choice: HoldChoice) => {
+  const handleChoiceClick = (choice: HoldChoice, index: number) => {
     console.log("Handling tap action:", choice)
 
-    setShowMenu(false)
-    handleTapAction(choice.action, hass, configTyped?.entity)
+    setPressedChoiceIndex(index)
+    setTimeout(() => setPressedChoiceIndex(null), 150)
+
+    setTimeout(() => {
+      setShowMenu(false)
+      handleTapAction(choice.action, hass, configTyped?.entity)
+    }, 150)
   }
 
   // Check if entity is a light (from config or domain)
   const isLight = configTyped?.isLight ?? configTyped?.entity?.startsWith("light.")
 
   // Determine background color based on state
-  const backgroundColor = isOn
-    ? (isLight ? theme.card.activeLightButtonBackgroundColor : theme.card.activeButtonBackgroundColor)
-    : theme.card.inactiveButtonBackgroundColor
+  const getBackgroundColor = () => {
+    if (isPressed) {
+      return isLight ? theme.card.activeLightButtonBackgroundColor : theme.card.activeButtonBackgroundColor
+    }
+    return isOn
+      ? (isLight ? theme.card.activeLightButtonBackgroundColor : theme.card.activeButtonBackgroundColor)
+      : theme.card.inactiveButtonBackgroundColor
+  }
+
+  const backgroundColor = getBackgroundColor()
 
   return (
     <div className="relative">
@@ -229,7 +291,7 @@ export function ButtonCard({
               key={idx}
               className="flex items-center justify-center px-3 py-4 hover:opacity-80 transition-opacity whitespace-nowrap"
               style={{
-                backgroundColor: 'transparent',
+                backgroundColor: pressedChoiceIndex === idx ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
                 cursor: 'pointer',
                 border: 'none',
                 borderTop: idx > 0 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none',
@@ -242,7 +304,7 @@ export function ButtonCard({
               onClick={(e) => {
                 e.stopPropagation()
                 console.log("Choice clicked:", choice.label)
-                handleChoiceClick(choice)
+                handleChoiceClick(choice, idx)
               }}
             >
               <span className="text-sm">{choice.label}</span>
