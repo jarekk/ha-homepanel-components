@@ -11,6 +11,7 @@ import { ScrollableTextCard } from "./cards/ScrollableTextCard"
 import { NotificationsCard } from "./cards/NotificationsCard"
 import { HorizontalStackCard } from "./cards/HorizontalStackCard"
 import { ThermostatButtonCard } from "./cards/ThermostatButtonCard"
+import { GraphCard } from "./cards/GraphCard"
 import { initializeTheme } from "./theme/themeContext"
 
 // function loadCSS(url: string) {
@@ -54,3 +55,4 @@ registerCard("ha-homepanel-scrollable-text", ScrollableTextCard)
 registerCard("ha-homepanel-notifications", NotificationsCard)
 registerCard("ha-homepanel-horizontal-stack", HorizontalStackCard)
 registerCard("ha-homepanel-thermostat-button", ThermostatButtonCard)
+registerCard("ha-homepanel-graph", GraphCard)
