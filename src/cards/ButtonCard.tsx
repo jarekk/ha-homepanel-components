@@ -216,23 +216,42 @@ export function ButtonCard({
   const backgroundColor = getBackgroundColor()
 
   return (
-    <div className="relative">
-      <button
-        ref={buttonRef}
-        className="bg-card flex-1 w-28 h-24 px-2 flex flex-col items-center justify-center gap-2 hover:opacity-80 transition-opacity relative"
-        style={{
-          borderRadius: theme.card.borderRadius,
-          backgroundColor: backgroundColor,
-          cursor: 'pointer'
-        }}
-        onClick={handleClick}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleMouseDown}
-        onTouchEnd={handleMouseUp}
-        onContextMenu={handleContextMenu}
-      >
+    <>
+      {/* Blurred overlay when menu is open */}
+      {showMenu && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 40,
+            animation: 'fadeIn 0.2s ease-in-out'
+          }}
+          onClick={() => setShowMenu(false)}
+        />
+      )}
+
+      <div className="relative" style={{ zIndex: showMenu ? 50 : 'auto' }}>
+        <button
+          ref={buttonRef}
+          className="bg-card flex-1 w-28 h-24 px-2 flex flex-col items-center justify-center gap-2 hover:opacity-80 transition-opacity relative"
+          style={{
+            borderRadius: theme.card.borderRadius,
+            backgroundColor: backgroundColor,
+            cursor: 'pointer'
+          }}
+          onClick={handleClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleMouseDown}
+          onTouchEnd={handleMouseUp}
+          onContextMenu={handleContextMenu}
+        >
         {configTyped?.icon && (
           <ha-icon
             icon={configTyped.icon}
@@ -312,6 +331,7 @@ export function ButtonCard({
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

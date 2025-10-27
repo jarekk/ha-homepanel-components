@@ -12,6 +12,8 @@ import { NotificationsCard } from "./cards/NotificationsCard"
 import { HorizontalStackCard } from "./cards/HorizontalStackCard"
 import { ThermostatButtonCard } from "./cards/ThermostatButtonCard"
 import { GraphCard } from "./cards/GraphCard"
+import { EnergyFlowCard } from "./cards/EnergyFlowCard"
+import { ConfigSelectorCard } from "./cards/ConfigSelectorCard"
 import { initializeTheme } from "./theme/themeContext"
 
 // function loadCSS(url: string) {
@@ -56,3 +58,5 @@ registerCard("ha-homepanel-notifications", NotificationsCard)
 registerCard("ha-homepanel-horizontal-stack", HorizontalStackCard)
 registerCard("ha-homepanel-thermostat-button", ThermostatButtonCard)
 registerCard("ha-homepanel-graph", GraphCard)
+registerCard("ha-homepanel-energy-flow", EnergyFlowCard)
+registerCard("ha-homepanel-config-selector", ConfigSelectorCard)
