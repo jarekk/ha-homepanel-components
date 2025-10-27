@@ -79,7 +79,8 @@ export function EnergyUsageInfoCard({
 
   const formatEnergy = (value: number | undefined) => {
     if (value === undefined || isNaN(value)) return "--"
-    return value.toFixed(1)
+    // Don't show decimal point for values >= 10 (two digits or more)
+    return value >= 10 ? value.toFixed(0) : value.toFixed(1)
   }
 
   return (

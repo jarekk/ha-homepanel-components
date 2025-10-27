@@ -23,6 +23,8 @@ interface EnergyFlowCardConfig extends LovelaceCardConfig {
   housePowerEntity?: string
   batteryPowerEntity?: string
   thermalBatteryPowerEntity?: string
+  batteryStateOfChargeEntity?: string // Battery state of charge percentage
+  waterUsageEntity?: string // Current water usage
 }
 
 export function EnergyFlowCard({
@@ -72,17 +74,32 @@ export function EnergyFlowCard({
   const batteryPower = getBatteryPower()
   const thermalBatteryPower = getThermalBatteryPower()
 
+  // Get battery state of charge
+  const getBatteryStateOfCharge = () => {
+    const state = lookupEntityInState(hass, configTyped?.batteryStateOfChargeEntity ?? "")?.state
+    return state && state !== "unknown" && state !== "unavailable" ? parseFloat(state) : undefined
+  }
+
+  const getWaterUsage = () => {
+    const state = lookupEntityInState(hass, configTyped?.waterUsageEntity ?? "")?.state
+    return state && state !== "unknown" && state !== "unavailable" ? parseFloat(state) : 0
+  }
+
+  const batterySOC = getBatteryStateOfCharge()
+  const waterUsage = getWaterUsage()
+
   // Format power values
   const formatPower = (value: number, showSign = false) => {
-    if (value === 0 || isNaN(value)) return "--"
+    if (isNaN(value)) return "0"
+    if (value === 0) return "0"
     const formatted = Math.abs(value).toFixed(0)
     if (!showSign) return formatted
     return value > 0 ? `+${formatted}` : `-${formatted}`
   }
 
-  // Get color for signed values (positive = green, negative = red)
+  // Get color for signed values (positive = green, negative = red, zero = grey)
   const getSignColor = (value: number) => {
-    if (value === 0 || isNaN(value)) return "white"
+    if (value === 0 || isNaN(value)) return "#9ca3af"
     return value > 0 ? "#10b981" : "#ef4444"
   }
 
@@ -111,32 +128,48 @@ export function EnergyFlowCard({
           <h2 className="text-sm font-medium text-foreground">{configTyped?.title || "Energy Flow"}</h2>
         </div>
 
-        {/* Title bar icons */}
-        {configTyped?.titleBarIcons && configTyped.titleBarIcons.length > 0 && (
-          <div className="flex items-center gap-2">
-            {configTyped.titleBarIcons.map((iconConfig, idx) => {
-              const entityState = iconConfig.entity
-                ? lookupEntityInState(hass, iconConfig.entity)
-                : null
-              const isActive = entityState?.state === "on" || entityState?.state === "open"
-              const iconColor = isActive && iconConfig["color-active"]
-                ? resolveColor(iconConfig["color-active"])
-                : "white"
+        <div className="flex items-center gap-4">
+          {/* Battery state of charge */}
+          {configTyped?.batteryStateOfChargeEntity && batterySOC !== undefined && (
+            <div className="flex items-center gap-1">
+              <ha-icon
+                icon="mdi:battery"
+                style={{
+                  "--mdc-icon-size": "16px",
+                  color: "white"
+                } as any}
+              />
+              <span className="text-foreground text-sm">{batterySOC.toFixed(0)}%</span>
+            </div>
+          )}
 
-              return (
-                <span key={idx}>
-                  <ha-icon
-                    icon={iconConfig.icon}
-                    style={{
-                      "--mdc-icon-size": "16px",
-                      color: iconColor
-                    } as any}
-                  />
-                </span>
-              )
-            })}
-          </div>
-        )}
+          {/* Title bar icons */}
+          {configTyped?.titleBarIcons && configTyped.titleBarIcons.length > 0 && (
+            <div className="flex items-center gap-2">
+              {configTyped.titleBarIcons.map((iconConfig, idx) => {
+                const entityState = iconConfig.entity
+                  ? lookupEntityInState(hass, iconConfig.entity)
+                  : null
+                const isActive = entityState?.state === "on" || entityState?.state === "open"
+                const iconColor = isActive && iconConfig["color-active"]
+                  ? resolveColor(iconConfig["color-active"])
+                  : "white"
+
+                return (
+                  <span key={idx}>
+                    <ha-icon
+                      icon={iconConfig.icon}
+                      style={{
+                        "--mdc-icon-size": "16px",
+                        color: iconColor
+                      } as any}
+                    />
+                  </span>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       <Separator className="mb-3" />
@@ -145,8 +178,15 @@ export function EnergyFlowCard({
       <div className="flex flex-col gap-2">
         <div className="flex items-center text-xs">
           <span className="text-gray-400 flex-1">Solar</span>
-          <span className="text-right w-24" style={{ color: "#10b981" }}>
+          <span className="text-right w-24" style={{ color: solarPower === 0 || isNaN(solarPower) ? "#9ca3af" : "#10b981" }}>
             {formatPower(solarPower)} W
+          </span>
+        </div>
+
+        <div className="flex items-center text-xs">
+          <span className="text-gray-400 flex-1">House</span>
+          <span className="text-right w-24" style={{ color: housePower === 0 || isNaN(housePower) ? "#9ca3af" : "white" }}>
+            {formatPower(housePower)} W
           </span>
         </div>
 
@@ -166,10 +206,22 @@ export function EnergyFlowCard({
 
         <div className="flex items-center text-xs">
           <span className="text-gray-400 flex-1">Grid</span>
-          <span className="text-right w-24" style={{ color: getSignColor(gridPower) }}>
-            {formatPower(gridPower, true)} W
+          <span className="text-right w-24" style={{ color: getSignColor(-gridPower) }}>
+            {formatPower(-gridPower, true)} W
           </span>
         </div>
+
+        {configTyped?.waterUsageEntity && (
+          <>
+            <div className="border-t border-gray-600 my-2" />
+            <div className="flex items-center text-xs">
+              <span className="text-gray-400 flex-1">Water</span>
+              <span className="text-right w-24" style={{ color: waterUsage === 0 || isNaN(waterUsage) ? "#9ca3af" : "white" }}>
+                {formatPower(waterUsage)} L/min
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
