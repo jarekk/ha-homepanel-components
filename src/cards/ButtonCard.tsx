@@ -42,6 +42,7 @@ export function ButtonCard({
   const [isPressed, setIsPressed] = useState(false)
   const [pressedChoiceIndex, setPressedChoiceIndex] = useState<number | null>(null)
   const holdTimerRef = useRef<number | null>(null)
+  const menuJustOpenedRef = useRef(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -81,15 +82,21 @@ export function ButtonCard({
   }, [showMenu])
 
   const handleClick = () => {
-    // Visual feedback
-    setIsPressed(true)
-    setTimeout(() => setIsPressed(false), 150)
-
     // Don't trigger tap action if menu is showing
     if (showMenu) {
+      // If the menu was just opened by a hold action, ignore this click
+      // (it's the mouseup/touchend after the long press)
+      if (menuJustOpenedRef.current) {
+        menuJustOpenedRef.current = false
+        return
+      }
       setShowMenu(false)
       return
     }
+
+    // Visual feedback
+    setIsPressed(true)
+    setTimeout(() => setIsPressed(false), 150)
 
     let action: TapAction | undefined
 
@@ -170,6 +177,7 @@ export function ButtonCard({
 
         setMenuPosition(spaceBelow >= menuHeight || spaceBelow > spaceAbove ? 'below' : 'above')
       }
+      menuJustOpenedRef.current = true
       setShowMenu(true)
     }, 500) // 500ms hold time
   }
