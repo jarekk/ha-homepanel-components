@@ -93,7 +93,7 @@ export function ContainerCard({
 
   return (
     <div className="w-full flex justify-center" style={{ marginTop: '8px' }}>
-      <div className="flex gap-2" style={{ }}>
+      <div className="flex flex-col md:flex-row gap-2">
         {columns.map((columnCards, colIdx) => (
           <div key={`col-${colIdx}`} className="flex flex-col gap-2">
             {columnCards?.map((cardConfig, cardIdx) => (
