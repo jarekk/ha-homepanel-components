@@ -14,6 +14,7 @@ import { ThermostatButtonCard } from "./cards/ThermostatButtonCard"
 import { GraphCard } from "./cards/GraphCard"
 import { EnergyFlowCard } from "./cards/EnergyFlowCard"
 import { ConfigSelectorCard } from "./cards/ConfigSelectorCard"
+import { ValueCard } from "./cards/ValueCard"
 import { initializeTheme } from "./theme/themeContext"
 
 // function loadCSS(url: string) {
@@ -60,3 +61,4 @@ registerCard("ha-homepanel-thermostat-button", ThermostatButtonCard)
 registerCard("ha-homepanel-graph", GraphCard)
 registerCard("ha-homepanel-energy-flow", EnergyFlowCard)
 registerCard("ha-homepanel-config-selector", ConfigSelectorCard)
+registerCard("ha-homepanel-value", ValueCard)

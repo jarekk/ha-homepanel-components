@@ -34,6 +34,8 @@ interface RainWateringCardConfig extends LovelaceCardConfig {
     thisWeekEntity: string
     lastWeekEntity: string
   }
+  currentTempEntity?: string
+  currentTempIcon?: string
   currentWindEntity?: string
   currentWindIcon?: string
   currentRainEntity?: string
@@ -85,6 +87,7 @@ export function RainWateringCard({
   const lawnLastWeek = formatValue(lawnLastWeekRaw, "h")
 
   // Get current conditions
+  const currentTempRaw = lookupEntityInState(hass, configTyped?.currentTempEntity ?? "")?.state
   const currentWindRaw = lookupEntityInState(hass, configTyped?.currentWindEntity ?? "")?.state
   const currentRainRaw = lookupEntityInState(hass, configTyped?.currentRainEntity ?? "")?.state
 
@@ -96,6 +99,7 @@ export function RainWateringCard({
     return `${numValue.toFixed(1)} ${unit}`
   }
 
+  const currentTemp = formatCurrentValue(currentTempRaw, "°C")
   const currentWind = formatCurrentValue(currentWindRaw, "m/s")
   const currentRain = formatCurrentValue(currentRainRaw, "mm")
 
@@ -154,6 +158,16 @@ export function RainWateringCard({
             <h2 className="text-sm font-medium text-foreground">{configTyped?.title || "Rain & Watering"}</h2>
           </div>
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <ha-icon
+                icon={configTyped?.currentTempIcon || "mdi:thermometer"}
+                style={{
+                  "--mdc-icon-size": "16px",
+                  color: "white"
+                } as any}
+              />
+              <span className="text-xs text-foreground">{currentTemp || "--"}</span>
+            </div>
             <div className="flex items-center gap-1">
               <ha-icon
                 icon={configTyped?.currentWindIcon || "mdi:weather-windy"}

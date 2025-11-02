@@ -156,6 +156,22 @@ export function ButtonCard({
             entity_id: entityId
           }
         }
+      } else if (domain === "input_boolean") {
+        action = {
+          action: "call-service",
+          service: "input_boolean.toggle",
+          service_data: {
+            entity_id: entityId
+          }
+        }
+      } else if (domain === "button") {
+        action = {
+          action: "call-service",
+          service: "button.press",
+          service_data: {
+            entity_id: entityId
+          }
+        }
       }
     }
 
